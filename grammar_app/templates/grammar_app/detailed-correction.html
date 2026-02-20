@@ -1,0 +1,431 @@
+{% extends 'grammar_app/gram_base.html' %}
+{% block content %}
+<style>
+    /* محفظه یکپارچه ادیتور */
+    .editor-container-unified {
+        border: 1px solid #e5e7eb;
+        border-radius: 0 0 12px 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        background: white;
+    }
+
+    .error-underline {
+    border-bottom: 2px #f43f5e;
+    background-color: rgba(244, 63, 94, 0.1);
+    cursor: help;
+    }
+
+    .editor-box {
+        overflow-y: auto;
+        overflow-x: hidden;
+        outline: none;
+        padding: 1.5rem;
+        line-height: 1.8;
+        background-color: white;
+        text-align: right;
+        direction: rtl;
+        /* ۵۰ پیکسل از ارتفاع قبلی کم شد */
+        height: calc(75vh - 50px);
+    }
+
+    /* نوار آمار چسبیده به پایین */
+    .attached-stats-bar {
+        background-color: #f9fafb;
+        border-top: 1px solid #e5e7eb;
+        padding: 10px 20px;
+        display: flex;
+        gap: 25px;
+        justify-content: flex-start;
+        align-items: center;
+        color: #4b5563;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .attached-stats-bar span {
+        font-weight: 600;
+    }
+
+    .attached-stats-bar b {
+        color: #4b5563;
+        font-weight: normal;
+        font-size: 0.9rem;
+    }
+
+    /* ابزار شناور */
+    #floating-toolbar {
+        display: none;
+        position: absolute;
+        background: #1f2937;
+        color: white;
+        padding: 5px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 1000;
+        flex-direction: row;
+        gap: 5px;
+        align-items: center;
+    }
+    #floating-toolbar button { padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+
+    .suggestion-card {
+        cursor: pointer;
+        transition: background-color 0.2s;
+        background-color: #f9fafb;
+        border-right: 4px solid #f43f5e;
+    }
+
+    .suggestion-card:hover {
+        background-color: #fff1f2;
+    }
+
+    .word-highlight-fade {
+        animation: highlightFade 1.5s ease-out;
+    }
+    @keyframes highlightFade {
+        0% { background-color: #bbf7d0; }
+        100% { background-color: transparent; }
+    }
+
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+</style>
+
+<div class="flex gap-6 h-full items-start" dir="rtl">
+    <div class="flex-1 flex flex-col" id="main-editor-container">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="headline-font text-2xl font-bold"> ویرایش حرفه‌ای</h1>
+            <span id="save-status" class="text-xs text-gray-400"></span>
+        </div>
+
+        <div id="floating-toolbar">
+            <button onclick="applyFormat('bold')"><i data-lucide="bold" size="14"></i></button>
+            <button onclick="applyFormat('italic')"><i data-lucide="italic" size="14"></i></button>
+            <div class="divider w-px h-4 bg-gray-600"></div>
+            <button onclick="applyFormat('formatBlock', 'h1')">H1</button>
+            <button onclick="applyFormat('formatBlock', 'h2')">H2</button>
+        </div>
+
+        <div class="bg-white p-2 border rounded-t-xl flex justify-between items-center shadow-sm">
+            <div class="flex gap-4 items-center">
+                <button onclick="applyFormat('bold')" class="p-2 hover:bg-rose-50 rounded transition-colors"><i data-lucide="bold" size="18"></i></button>
+                <button onclick="applyFormat('italic')" class="p-2 hover:bg-rose-50 rounded transition-colors"><i data-lucide="italic" size="18"></i></button>
+                <button onclick="applyFormat('underline')" class="p-2 hover:bg-rose-50 rounded transition-colors"><i data-lucide="underline" size="18"></i></button>
+                <div class="w-px h-6 bg-gray-200"></div>
+                <button onclick="applyFormat('formatBlock', 'h1')" class="px-3 py-1 font-black hover:bg-rose-50 rounded text-sm">H1</button>
+                <button onclick="applyFormat('formatBlock', 'h2')" class="px-3 py-1 font-bold hover:bg-rose-50 rounded text-sm">H2</button>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="processText()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-all shadow-sm shadow-rose-100">
+                    <i data-lucide="sparkles" size="16"></i>
+                    <span>بررسی متن</span>
+                </button>
+
+                <div class="w-px h-6 bg-gray-200 mx-1"></div>
+
+                <button id="clear-btn" onclick="clearEditor()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 rounded-lg transition-all border border-red-100">
+                    <i data-lucide="trash-2" size="16"></i>
+                    <span>پاکسازی</span>
+                </button>
+
+                <button onclick="handleInput()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 rounded-lg transition-all border border-gray-200">
+                    <i data-lucide="save" size="16"></i>
+                    <span>ذخیره</span>
+                </button>
+
+                <button id="copy-btn" onclick="copyAllText()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-all border border-gray-100">
+                    <i data-lucide="copy" size="16"></i>
+                    <span>کپی متن</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="editor-container-unified shadow-sm">
+            <div id="detailed-editor" class="editor-box" contenteditable="true"
+                 oninput="handleInput()" onmouseup="handleSelection()"></div>
+
+            <div class="attached-stats-bar">
+                <div class="flex items-center gap-1.5">
+                    <i data-lucide="pilcrow" class="text-rose-500" size="14"></i>
+                    <span>کلمات: <b id="d-w">0</b></span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <i data-lucide="message-square" class="text-rose-500" size="14"></i>
+                    <span>جملات: <b id="d-s">0</b></span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <i data-lucide="align-right" class="text-rose-500" size="14"></i>
+                    <span>حروف: <b id="d-c">0</b></span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <i data-lucide="list" class="text-rose-500" size="14"></i>
+                    <span>پاراگراف: <b id="d-p">0</b></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <aside class="w-80 flex flex-col" style="margin-top: 48px;">
+        <div class="bg-white rounded-2xl p-5 shadow-lg border border-rose-100 flex flex-col overflow-hidden"
+             style="height: calc(75vh + 55px);">
+            <h3 class="font-bold mb-4 flex items-center gap-2 text-rose-600 flex-shrink-0">
+                <i data-lucide="sparkles" size="18"></i> پیشنهادات
+            </h3>
+
+            <div class="space-y-3 overflow-y-auto pr-1 flex-1 custom-scrollbar">
+                <div class="suggestion-card p-3 rounded-xl text-sm" onclick="replaceWord('خوب', 'مطلوب')">
+                    <p class="font-bold text-gray-700">بهبود واژه</p>
+                    <p class="text-gray-500 text-xs mt-1">به جای <span class="text-rose-600 font-bold">"خوب"</span> از <span class="text-green-600 font-bold">"مطلوب"</span> استفاده کنید.</p>
+                </div>
+                <div class="suggestion-card p-3 rounded-xl text-sm" onclick="replaceWord('بد', 'نامناسب')">
+                    <p class="font-bold text-gray-700">اصلاح نگارش</p>
+                    <p class="text-gray-500 text-xs mt-1">استفاده از <span class="text-rose-600 font-bold">"نامناسب"</span> لحن را رسمی‌تر می‌کند.</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<script>
+    // Add this JavaScript to the <script> section in your detailed-correction.html
+
+let currentErrors = [];  // ذخیره لیست خطاها
+
+async function processText() {
+    const editor = document.getElementById('detailed-editor');
+    let text = editor.innerText; // استفاده از innerText برای داشتن متن خالص
+
+    if (!text.trim()) {
+        alert('لطفاً ابتدا متنی وارد کنید.');
+        return;
+    }
+
+    const btn = event.target.closest('button');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<i data-lucide="loader-2" size="16" class="animate-spin"></i><span>در حال بررسی...</span>';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/api/detailed-correction/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input_text: text })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            currentErrors = result.errors || [];
+            displayErrors(currentErrors);
+
+            // هایلایت کردن کلمات در ادیتور
+            highlightErrorsInEditor(currentErrors);
+        } else {
+            alert('خطا: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    } finally {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+        lucide.createIcons();
+    }
+}
+
+// تابع جدید برای اعمال خط قرمز زیر کلمات
+function highlightErrorsInEditor(errors) {
+    const editor = document.getElementById('detailed-editor');
+    let htmlContent = editor.innerText;
+
+    // مرتب‌سازی خطاها بر اساس طول کلمه (از طولانی به کوتاه)
+    // تا کلمات کوچک‌تر داخل کلمات بزرگتر باعث تداخل نشوند
+    const sortedErrors = [...errors].sort((a, b) => b.wrong.length - a.wrong.length);
+
+    sortedErrors.forEach(error => {
+        const word = error.wrong;
+        // ایجاد یک عبارت منظم برای پیدا کردن کلمه دقیق (دقت در مرز کلمات)
+        const regex = new RegExp(`(${word})`, 'g');
+        htmlContent = htmlContent.replace(regex, `<span class="error-underline" title="پیشنهاد: ${error.correct}">$1</span>`);
+    });
+
+    editor.innerHTML = htmlContent;
+}
+
+// نمایش خطاها در پنل پیشنهادات
+function displayErrors(errors) {
+    const suggestionsContainer = document.querySelector('.space-y-3');
+
+    if (errors.length === 0) {
+        suggestionsContainer.innerHTML = `
+            <div class="p-4 text-center text-gray-500">
+                <i data-lucide="check-circle" size="48" class="mx-auto mb-2 text-green-500"></i>
+                <p class="font-bold">عالی!</p>
+                <p class="text-xs mt-1">هیچ خطایی یافت نشد.</p>
+            </div>
+        `;
+        lucide.createIcons();
+        return;
+    }
+
+    suggestionsContainer.innerHTML = errors.map((error, index) => `
+        <div class="suggestion-card p-3 rounded-xl text-sm" onclick="replaceWord('${escapeHtml(error.wrong)}', '${escapeHtml(error.correct)}')">
+            <p class="font-bold text-gray-700">${error.type || 'خطا'}</p>
+            <p class="text-gray-500 text-xs mt-1">
+                به جای <span class="text-rose-600 font-bold">"${escapeHtml(error.wrong)}"</span>
+                از <span class="text-green-600 font-bold">"${escapeHtml(error.correct)}"</span> استفاده کنید.
+            </p>
+        </div>
+    `).join('');
+
+    lucide.createIcons();
+}
+
+// تابع جایگزینی کلمه در متن
+function replaceWord(wrongWord, correctWord) {
+    const editor = document.getElementById('detailed-editor');
+    let content = editor.innerHTML;
+
+    // جایگزینی اولین instance پیدا شده
+    const regex = new RegExp(wrongWord, 'g');
+    const newContent = content.replace(regex, `<span class="word-highlight-fade">${correctWord}</span>`);
+
+    editor.innerHTML = newContent;
+
+    // به‌روزرسانی آمار
+    handleInput();
+}
+
+// تابع ذخیره سند
+async function saveDocument() {
+    const editor = document.getElementById('detailed-editor');
+    const content = editor.innerText.trim();
+
+    if (!content) {
+        alert('متنی برای ذخیره وجود ندارد.');
+        return;
+    }
+
+    const btn = event.target.closest('button');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<i data-lucide="loader-2" size="16" class="animate-spin"></i><span>در حال ذخیره...</span>';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/api/save-detailed-document/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                content: content,
+                error_list: currentErrors
+            })
+        });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // نمایش پیام موفقیت
+                const statusEl = document.getElementById('save-status');
+                statusEl.textContent = '✓ ذخیره شد';
+                statusEl.className = 'text-xs text-green-600';
+                setTimeout(() => {
+                    statusEl.textContent = '';
+                }, 3000);
+            } else {
+                alert('خطا در ذخیره: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('خطا در ارتباط با سرور');
+        } finally {
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+            lucide.createIcons();
+        }
+    }
+
+    // تابع کمکی برای escape کردن HTML
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // محاسبه آمار متن
+    function handleInput() {
+        const editor = document.getElementById('detailed-editor');
+        const text = editor.innerText;
+
+        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+        const chars = text.length;
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim()).length;
+        const paragraphs = text.split(/\n+/).filter(p => p.trim()).length;
+
+        document.getElementById('d-w').textContent = words;
+        document.getElementById('d-c').textContent = chars;
+        document.getElementById('d-s').textContent = sentences;
+        document.getElementById('d-p').textContent = paragraphs;
+    }
+
+    // پاکسازی ادیتور
+    function clearEditor() {
+        if (confirm('آیا از پاکسازی متن اطمینان دارید؟')) {
+            document.getElementById('detailed-editor').innerHTML = '';
+            currentErrors = [];
+            displayErrors([]);
+            handleInput();
+        }
+    }
+
+    // کپی کردن متن
+    function copyAllText() {
+        const editor = document.getElementById('detailed-editor');
+        const text = editor.innerText;
+
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.getElementById('copy-btn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="check" size="16"></i><span>کپی شد</span>';
+            setTimeout(() => {
+                btn.innerHTML = originalContent;
+                lucide.createIcons();
+            }, 2000);
+        });
+    }
+
+    // توابع فرمت‌دهی (برای toolbar)
+    function applyFormat(command, value = null) {
+        document.execCommand(command, false, value);
+    }
+
+    function handleSelection() {
+        const selection = window.getSelection();
+        if (selection.toString().length > 0) {
+            const toolbar = document.getElementById('floating-toolbar');
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+
+            toolbar.style.display = 'flex';
+            toolbar.style.left = rect.left + 'px';
+            toolbar.style.top = (rect.top - 40) + 'px';
+        } else {
+            document.getElementById('floating-toolbar').style.display = 'none';
+        }
+    }
+
+    // مخفی کردن toolbar وقتی کلیک خارج از selection
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#floating-toolbar') && !window.getSelection().toString()) {
+            document.getElementById('floating-toolbar').style.display = 'none';
+        }
+    });
+
+    // بارگذاری آیکون‌ها
+    lucide.createIcons();
+
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Estedad:wght@100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Lalezar&display=swap');
+
+        :root {
+            --bg-color: #f7f7f7;
+            --paper-color: #FFFFFF;
+            --text-color: #374151;
+            --primary-color: #f43f5e;
+            --icon-color: #e11d48;
+            --sidebar-bg: #fdf2f8;
+        }
+
+        body { font-family: 'Estedad', sans-serif; background-color: var(--bg-color); color: var(--text-color); }
+        .headline-font { font-family: 'Lalezar', sans-serif; }
+
+        /* جلوگیری از کشیده شدن و اجبار به اسکرول */
+        .editor-container {
+            height: 65vh;
+            overflow-y: auto;
+            display: block;
+            background: white;
+            border: 1px solid #e5e7eb;
+            padding: 1.5rem;
+            line-height: 1.8;
+            text-align: right;
+        }
+
+        .editor-container:focus { outline: none; border-color: var(--primary-color); }
+        .sidebar-link { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px; border-radius: 12px; transition: 0.2s; color: #4b5563; }
+        .sidebar-link:hover { background-color: #fce7f3; color: var(--icon-color); }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <aside class="fixed right-0 top-0 h-screen w-20 flex flex-col items-center py-6 border-l border-rose-100/50 z-50" style="background-color: var(--sidebar-bg);">
+        <a href="{% url 'homepage' %}" class="mb-10 bg-white p-2 rounded-xl shadow-md">
+            <i data-lucide="pen-tool" style="color: var(--icon-color);"></i>
+        </a>
+
+        <nav class="flex flex-col gap-6 w-full items-center flex-grow">
+            <a href="{% url 'mood-selection' %}" class="sidebar-link"><i data-lucide="plus-circle"></i><span class="text-xs">جدید</span></a>
+            <a href="{% url 'documents' %}" class="sidebar-link"><i data-lucide="folder-open"></i><span class="text-xs">اسناد</span></a>
+        </nav>
+
+        <div class="flex flex-col gap-4 w-full items-center mt-auto pt-6 border-t border-rose-100">
+            <a href="#" class="sidebar-link"><i data-lucide="user"></i><span class="text-xs">حساب</span></a>
+            <a href="#" class="sidebar-link"><i data-lucide="help-circle"></i><span class="text-xs">پشتیبانی</span></a>
+            <a href="#" class="sidebar-link text-rose-600"><i data-lucide="log-out"></i><span class="text-xs">خروج</span></a>
+        </div>
+    </aside>
+
+    <main class="flex-1 lg:mr-20 py-8 px-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        lucide.createIcons();
+        // تابع مشترک برای فرمت دهی
+        function applyFormat(command, value = null) {
+            document.execCommand(command, false, value);
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+
+

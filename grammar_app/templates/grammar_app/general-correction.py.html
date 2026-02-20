@@ -1,0 +1,245 @@
+{% extends 'grammar_app/gram_base2.html' %}
+{% block content %}
+<style>
+    .editor-container-unified {
+        border: 1px solid #e5e7eb;
+        border-radius: 0 0 12px 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        background: white;
+    }
+
+    .editor-box {
+        overflow-y: auto;
+        overflow-x: hidden;
+        outline: none;
+        padding: 1.5rem;
+        line-height: 1.8;
+        background-color: white;
+        text-align: right;
+        direction: rtl;
+        height: calc(75vh - 50px);
+    }
+
+    /* اصلاح رنگ هدینگ‌ها به رنگ متن (سیاه/خاکستری تیره) */
+    .editor-box h1 { font-size: 2rem; font-weight: bold; display: block; color: #1f2937; margin-bottom: 10px; }
+    .editor-box h2 { font-size: 1.5rem; font-weight: bold; display: block; color: #1f2937; margin-bottom: 8px; }
+
+    .attached-stats-bar {
+        background-color: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        padding: 10px 20px;
+        display: flex;
+        gap: 25px;
+        justify-content: flex-start;
+        align-items: center;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .attached-stats-bar span { font-weight: 600; }
+    .stat-num { font-weight: 500; color: #2563eb; margin-right: 2px; }
+
+    .copy-success {
+        background-color: #10b981 !important;
+        color: white !important;
+        border-color: #059669 !important;
+    }
+
+    #floating-toolbar {
+        display: none;
+        position: absolute;
+        background: #1e293b;
+        color: white;
+        padding: 5px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 1000;
+        gap: 5px;
+    }
+    #floating-toolbar button { padding: 5px 10px; border-radius: 5px; font-size: 12px; transition: background 0.2s; }
+    #floating-toolbar button:hover { background: #334155; }
+
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+</style>
+
+<div class="flex gap-6 h-full items-start" dir="rtl">
+
+    <div class="flex-1 flex flex-col relative" id="main-editor-container">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="headline-font text-2xl font-bold text-gray-800">ویرایش کلی</h1>
+            <span id="save-status" class="text-xs text-blue-500 font-medium"></span>
+        </div>
+
+        <div class="bg-white p-2 border rounded-t-xl flex justify-between items-center shadow-sm">
+            <div class="flex gap-4 items-center">
+                <button onclick="applyFormat('bold')" class="p-2 hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded transition-colors"><i data-lucide="bold" size="18"></i></button>
+                <button onclick="applyFormat('italic')" class="p-2 hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded transition-colors"><i data-lucide="italic" size="18"></i></button>
+                <button onclick="applyFormat('underline')" class="p-2 hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded transition-colors"><i data-lucide="underline" size="18"></i></button>
+                <div class="w-px h-6 bg-gray-200"></div>
+                <button onclick="applyFormat('formatBlock', '<h1>')" class="px-3 py-1 font-black hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded text-sm transition-colors">H1</button>
+                <button onclick="applyFormat('formatBlock', '<h2>')" class="px-3 py-1 font-bold hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded text-sm transition-colors">H2</button>
+            </div>
+
+            <div class="flex items-center gap-2">
+
+                <button onclick="processText()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all shadow-sm">
+                      <i data-lucide="sparkles" size="16"></i>
+                      <span>بررسی متن</span>
+                </button>
+                <div class="w-px h-6 bg-gray-200 mx-1"></div>
+
+                <button id="clear-btn" onclick="clearEditor()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-blue-500 hover:bg-blue-50 rounded-lg transition-all border border-blue-100">
+                    <i data-lucide="trash-2" size="16"></i>
+                    <span>پاکسازی</span>
+                </button>
+
+                <button onclick="saveDocument()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-all border border-gray-200">
+                    <i data-lucide="save" size="16"></i>
+                    <span>ذخیره</span>
+                </button>
+            </div>
+        </div>
+        <div class="editor-container-unified shadow-sm border-blue-50">
+            <div id="detailed-editor" class="editor-box custom-scrollbar" contenteditable="true"
+                 oninput="handleInput()" onmouseup="handleSelection()"></div>
+
+            <div class="attached-stats-bar">
+                <span>کلمات: <span class="stat-num" id="d-w">0</span></span>
+                <span>جملات: <span class="stat-num" id="d-s">0</span></span>
+                <span>پاراگراف: <span class="stat-num" id="d-p">0</span></span>
+                <span>حروف: <span class="stat-num" id="d-c">0</span></span>
+            </div>
+        </div>
+    </div>
+
+    <aside class="flex-1 flex flex-col" style="margin-top: 48px;">
+        <div class="bg-white rounded-2xl p-5 shadow-lg border border-blue-100 flex flex-col overflow-hidden"
+             style="height: calc(75vh + 55px);">
+
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold flex items-center gap-2 text-blue-700">
+                    <i data-lucide="sparkles" size="18"></i>
+                    نتیجه
+                </h3>
+                <button id="copy-btn" onclick="copyCorrectedText()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all border border-gray-100">
+                    <i data-lucide="copy" size="16"></i>
+                    <span>کپی نتیجه</span>
+                </button>
+            </div>
+
+            <textarea id="corrected-output"
+                      class="flex-1 w-full resize-none outline-none p-4 text-sm leading-8 bg-slate-50 rounded-xl custom-scrollbar border border-transparent focus:border-blue-50 transition-colors"
+                      readonly
+                      placeholder="نسخه‌ی اصلاح‌شده متن اینجا نمایش داده می‌شود..."></textarea>
+        </div>
+    </aside>
+</div>
+
+<script>
+    const editor = document.getElementById('detailed-editor');
+    const correctedOutput = document.getElementById('corrected-output');
+    const saveStatus = document.getElementById('save-status');
+    let timeout = null;
+
+    // الف) تابع بررسی متن توسط هوش مصنوعی
+    async function processText() {
+        const text = editor.innerText.trim();
+        if (!text) {
+            saveStatus.innerText = '⚠️ ابتدا متنی بنویسید';
+            return;
+        }
+
+        saveStatus.innerText = '🔄 در حال بررسی متن...';
+        try {
+            const response = await fetch('/api/general-correction/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ input_text: text })
+            });
+            const data = await response.json();
+            if (data.success) {
+                correctedOutput.value = data.refined_text;
+                saveStatus.innerText = '✨ بررسی تمام شد';
+            } else {
+                saveStatus.innerText = '❌ خطا در بررسی';
+            }
+        } catch (e) {
+            saveStatus.innerText = '❌ خطای ارتباط با سرور';
+        }
+    }
+
+    // ب) تابع ذخیره نهایی در دیتابیس (با زدن دکمه ذخیره)
+    async function saveDocument() {
+        const inputText = editor.innerText.trim();
+        const correctedText = correctedOutput.value.trim();
+
+        if (!inputText) {
+            saveStatus.innerText = '⚠️ متنی برای ذخیره وجود ندارد';
+            return;
+        }
+
+        saveStatus.innerText = '💾 در حال ذخیره در دیتابیس...';
+        try {
+            const response = await fetch('/api/save-document/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    input_text: inputText,
+                    corrected_text: correctedText
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                saveStatus.innerText = '✅ سند با موفقیت در دیتابیس ذخیره شد';
+                setTimeout(() => saveStatus.innerText = '', 3000);
+            }
+        } catch (e) {
+            saveStatus.innerText = '❌ خطای ذخیره‌سازی';
+        }
+    }
+
+    // ج) مدیریت آمار کلمات و ذخیره موقت در مرورگر
+    function handleInput() {
+        const text = editor.innerText || "";
+        document.getElementById('d-w').innerText = text.trim() ? text.trim().split(/\s+/).length : 0;
+        document.getElementById('d-c').innerText = text.length;
+
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            localStorage.setItem('editor_content_v2', editor.innerHTML);
+            saveStatus.innerText = '📝 پیش‌نویس در مرورگر حفظ شد';
+            setTimeout(() => saveStatus.innerText = '', 1500);
+        }, 1000);
+    }
+
+    // د) کارهای جانبی (کپی، پاکسازی، فرمت)
+    function copyCorrectedText() {
+        navigator.clipboard.writeText(correctedOutput.value);
+        const btn = document.getElementById('copy-btn');
+        btn.innerText = 'کپی شد!';
+        setTimeout(() => btn.innerHTML = '<i data-lucide="copy" size="16"></i><span>کپی نتیجه</span>', 2000);
+    }
+
+    function clearEditor() {
+        if (confirm('متن پاک شود؟')) {
+            editor.innerHTML = '';
+            correctedOutput.value = '';
+            handleInput();
+        }
+    }
+
+    function applyFormat(command, value = null) {
+        document.execCommand(command, false, value);
+        editor.focus();
+    }
+
+    window.addEventListener('load', () => {
+        const saved = localStorage.getItem('editor_content_v2');
+        if (saved) editor.innerHTML = saved;
+        if (window.lucide) lucide.createIcons();
+    });
+</script>
+{% endblock %}

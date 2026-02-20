@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}تماس با ما{% endblock %}
+
+{% block body-content %}
+<main class="max-w-2xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div class="p-8 md:p-10">
+        <h1 class="text-4xl font-extrabold mb-6 headline-font primary-text text-center">تماس با تیم پشتیبانی</h1>
+        <p class="text-center mb-8 text-gray-700">
+            برای هرگونه سوال، پیشنهاد یا گزارش مشکل، می‌توانید از طریق فرم زیر با ما در تماس باشید.
+        </p>
+
+        <form method="POST" action="">
+            {% csrf_token %}
+            <div class="space-y-6">
+
+                {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <button type="submit"
+                    class="app-button w-full px-6 py-3 rounded-full font-bold text-white transition duration-150 text-base"
+                    style="background-color: var(--icon-color);"
+                >
+                    ارسال پیام
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}

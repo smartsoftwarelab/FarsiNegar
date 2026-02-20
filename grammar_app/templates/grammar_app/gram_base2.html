@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Estedad:wght@100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Lalezar&display=swap');
+
+        :root {
+            --bg-color: #f8fafc; /* Slate 50 */
+            --paper-color: #FFFFFF;
+            --text-color: #1e293b; /* Slate 800 */
+            --primary-color: #2563eb; /* Blue 600 */
+            --icon-color: #3b82f6; /* Blue 500 */
+            --sidebar-bg: #eff6ff; /* Blue 50 */
+        }
+
+        body {
+            font-family: 'Estedad', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .headline-font { font-family: 'Lalezar', sans-serif; }
+
+        /* استایل کلی لینک‌های سایدبار */
+        .sidebar-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 10px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            color: #64748b; /* Slate 500 */
+            cursor: pointer;
+        }
+
+        /* حالت هوور عمومی برای تمام لینک‌های سایدبار (شامل خروج) */
+        .sidebar-link:hover {
+            background-color: #dbeafe; /* Blue 100 */
+            color: var(--primary-color);
+        }
+
+        /* لینک فعال */
+        .sidebar-link.active {
+            background-color: #dbeafe;
+            color: var(--primary-color);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <aside class="fixed right-0 top-0 h-screen w-20 flex flex-col items-center py-6 border-l border-blue-100 z-50 shadow-sm" style="background-color: var(--sidebar-bg);">
+
+        <a href="{% url 'homepage' %}" class="mb-10 bg-white p-2.5 rounded-2xl shadow-sm border border-blue-100 transition-transform hover:scale-105">
+            <i data-lucide="pen-tool" style="color: var(--primary-color);"></i>
+        </a>
+
+        <nav class="flex flex-col gap-6 w-full items-center flex-grow">
+            <a href="{% url 'mood-selection' %}" class="sidebar-link" title="جدید">
+                <i data-lucide="plus-circle" size="22"></i>
+                <span class="text-[10px] font-medium">جدید</span>
+            </a>
+            <a href="{% url 'documents' %}" class="sidebar-link" title="اسناد">
+                <i data-lucide="folder-open" size="22"></i>
+                <span class="text-[10px] font-medium">اسناد</span>
+            </a>
+        </nav>
+
+        <div class="flex flex-col gap-4 w-full items-center mt-auto pt-6 border-t border-blue-200/50">
+            <a href="#" class="sidebar-link" title="حساب کاربری">
+                <i data-lucide="user" size="22"></i>
+                <span class="text-[10px] font-medium">حساب</span>
+            </a>
+            <a href="#" class="sidebar-link" title="پشتیبانی">
+                <i data-lucide="help-circle" size="22"></i>
+                <span class="text-[10px] font-medium">پشتیبانی</span>
+            </a>
+            <a href="#" class="sidebar-link hover:bg-blue-100 hover:text-blue-700 transition-colors" title="خروج">
+                <i data-lucide="log-out" size="22"></i>
+                <span class="text-[10px] font-medium">خروج</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 lg:mr-20 py-8 px-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        // مقداردهی آیکون‌ها
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        function applyFormat(command, value = null) {
+            document.execCommand(command, false, value);
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}درباره ما{% endblock %}
+
+{% block body-content %}
+<main class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div class="p-8 md:p-12">
+        <!-- عنوان اصلی -->
+        <h1 class="text-4xl font-extrabold mb-6 headline-font primary-text text-center">فارسی‌نگار: دستیار نوشتار هوشمند</h1>
+
+        <!-- معرفی کوتاه -->
+        <p class="text-lg mb-8 text-gray-700 leading-relaxed text-justify">
+            در سال ۱۴۰۴، گروهی از دانشجویان پرشور و علاقه‌مند به دنیای هوش مصنوعی و زبان فارسی تصمیم گرفتند تحولی در نگارش دیجیتال ایجاد کنند. فارسی‌نگار حاصل تلاش شبانه‌روزی و انگیزه بی‌پایان تیم برنامه‌نویسی ماست تا تجربه‌ای نو و حرفه‌ای در زمینه نوشتار فارسی ارائه دهد.
+        </p>
+
+        <!-- چشم‌انداز -->
+        <h2 class="text-2xl font-bold mb-4 primary-text">چشم‌انداز ما</h2>
+        <p class="mb-8 leading-relaxed text-justify">
+            ما باور داریم که هر نویسنده، دانشجو یا تولیدکننده محتوا شایسته یک ابزار هوشمند، دقیق و قابل اعتماد است. با استفاده از پیشرفته‌ترین مدل‌های هوش مصنوعی و پردازش زبان طبیعی (NLP) که برای زبان فارسی بهینه‌سازی شده‌اند، فارسی‌نگار به شما کمک می‌کند متونی روان، صحیح و با حفظ اصالت زبان فارسی تولید کنید. هدف ما دقت، سرعت و ارتقاء تجربه کاربری است.
+        </p>
+
+        <p class="mb-8 leading-relaxed text-justify">
+            تیم دانشجویی ما، از جلسات برنامه‌نویسی تا ساعات طولانی تست و بهبود مدل‌ها، همواره در تلاش است تا بهترین کیفیت را ارائه دهد. هر کد نوشته شده، هر الگوریتم بهینه‌سازی شده و هر بازخورد کاربران، بخشی از مسیر رشد ما در سال ۱۴۰۴ است.
+        </p>
+
+
+        <!-- کارت‌ها -->
+        <div class="grid md:grid-cols-3 gap-6 mt-10 text-center">
+            <div class="p-6 rounded-2xl border shadow hover:shadow-lg transition duration-300">
+                <i data-lucide="brain" class="mx-auto mb-3" style="color: var(--icon-color);" size="40"></i>
+                <h3 class="font-bold headline-font text-xl mb-2">هوشمندی اختصاصی</h3>
+                <p class="text-sm opacity-70">مدل‌های ما تنها برای زبان فارسی آموزش دیده‌اند تا بیشترین دقت معنایی را ارائه دهند.</p>
+            </div>
+            <div class="p-6 rounded-2xl border shadow hover:shadow-lg transition duration-300">
+                <i data-lucide="feather" class="mx-auto mb-3" style="color: var(--icon-color);" size="40"></i>
+                <h3 class="font-bold headline-font text-xl mb-2">روانی نگارش</h3>
+                <p class="text-sm opacity-70">کمک به تولید متونی روان و خوانا، بدون خطاهای دستوری و معنایی.</p>
+            </div>
+            <div class="p-6 rounded-2xl border shadow hover:shadow-lg transition duration-300">
+                <i data-lucide="shield-check" class="mx-auto mb-3" style="color: var(--icon-color);" size="40"></i>
+                <h3 class="font-bold headline-font text-xl mb-2">حفظ حریم خصوصی</h3>
+                <p class="text-sm opacity-70">تعهد کامل به امنیت داده‌های کاربران و رعایت اصول حریم خصوصی.</p>
+            </div>
+        </div>
+
+      <!-- مسیر پیش رو (متن ساده) -->
+        <div class="mt-12">
+            <h2 class="text-2xl font-bold mb-3 primary-text">مسیر پیش رو</h2>
+            <p class="text-gray-700 leading-relaxed text-justify">
+                چشم‌انداز ما فراتر از نوشتار است: ایجاد جامعه‌ای پویا از کاربران و دانشجویان علاقه‌مند، گسترش پژوهش در حوزه پردازش زبان فارسی و توسعه ابزارهایی که نه تنها مشکلات نوشتاری بلکه تجربه دیجیتال کاربران را بهبود دهند. سال ۱۴۰۴ برای ما سالی سرشار از رشد، یادگیری و نوآوری است.
+            </p>
+        </div>
+      
+
+        <!-- اعضای تیم -->
+        <div class="mt-16">
+            <h2 class="text-3xl font-extrabold mb-8 headline-font primary-text text-center">اعضای تیم ما</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center p-6 rounded-2xl border shadow hover:shadow-lg transition duration-300">
+                    <img src="/static/images/member1.jpg" alt="مهدیه قاسم‌زاده" class="mx-auto mb-4 w-32 h-32 rounded-full object-cover">
+                    <h3 class="font-bold text-xl mb-1">مهدیه قاسم‌زاده</h3>
+                    <p class="text-sm text-gray-600">توسعه‌دهنده هوش مصنوعی و متخصص NLP</p>
+                </div>
+                <div class="text-center p-6 rounded-2xl border shadow hover:shadow-lg transition duration-300">
+                    <img src="/static/images/member2.jpg" alt="مهدیه قاسم‌زاده" class="mx-auto mb-4 w-32 h-32 rounded-full object-cover">
+                    <h3 class="font-bold text-xl mb-1">مهدیه قاسم‌زاده</h3>
+                    <p class="text-sm text-gray-600">طراح رابط کاربری و تجربه کاربری (UI/UX)</p>
+                </div>
+                <div class="text-center p-6 rounded-2xl border shadow hover:shadow-lg transition duration-300">
+                    <img src="/static/images/member3.jpg" alt="مهدیه قاسم‌زاده" class="mx-auto mb-4 w-32 h-32 rounded-full object-cover">
+                    <h3 class="font-bold text-xl mb-1">مهدیه قاسم‌زاده</h3>
+                    <p class="text-sm text-gray-600">مدیر پروژه و تحلیل‌گر داده‌ها</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+{% endblock %}

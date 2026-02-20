@@ -1,0 +1,21 @@
+{% extends 'grammar_app/gram_base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto mt-20 text-center">
+    <h1 class="headline-font text-4xl mb-4">نوع ویرایش را انتخاب کنید</h1>
+    <p class="text-gray-500 mb-12">چگونه می‌توانیم متن شما را بهتر کنیم؟</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <a href="{% url 'detailed_editing' %}" class="bg-white p-10 rounded-3xl shadow-lg border-b-8 border-rose-500 hover:-translate-y-2 transition-all">
+            <i data-lucide="zap" class="mx-auto mb-4 text-rose-500" size="40"></i>
+            <h2 class="text-2xl font-bold mb-2">ویرایش با جزئیات</h2>
+            <p class="text-sm text-gray-500">دستیار گرامری، فرمت‌دهی و بررسی دقیق</p>
+        </a>
+        <a href="{% url 'quick-correction' %}" class="bg-white p-10 rounded-3xl shadow-lg border-b-8 border-indigo-500 hover:-translate-y-2 transition-all">
+            <i data-lucide="layers" class="mx-auto mb-4 text-indigo-500" size="40"></i>
+            <h2 class="text-2xl font-bold mb-2">ویرایش سریع</h2>
+            <p class="text-sm text-gray-500">پردازش آنی و تمیزکاری خودکار متن</p>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
