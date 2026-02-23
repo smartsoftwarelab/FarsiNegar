@@ -143,4 +143,7 @@ Responsibilities:
 
 Prototype version — under development.
 
+<br><br>
+
+<img width="1920" height="2914" alt="finaleePoster" src="https://github.com/user-attachments/assets/b92fd551-c4ef-48f6-9fc4-d624d42b14c9" />
 
